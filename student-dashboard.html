@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <title>Student Dashboard | VolunteerVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="mobile-nav-header">
+        <a href="index.html" class="logo">
+            <img src="VVlogo1.PNG" alt="VolunteerVerse" style="height: 32px; width: auto;">
+        </a>
+        <button class="mobile-nav-toggle" id="mobileToggle">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="dash-layout">
+
+        <aside class="sidebar">
+            <a href="index.html" class="logo sidebar-logo">
+                <img src="VVlogo1.PNG" alt="VolunteerVerse" style="height: 48px; width: auto;">
+            </a>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                <a href="opportunities.html" class="nav-item"><i data-lucide="search"></i> Find Work</a>
+                <a href="#" class="nav-item"><i data-lucide="award"></i> My Certificates</a>
+                <a href="#" onclick="openSettings()" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+
+                <a href="#" onclick="logout()" class="nav-item logout"><i data-lucide="log-out"></i> Logout</a>
+            </nav>
+        </aside>
+
+        <main class="dash-content">
+            <!-- Header -->
+            <header class="dash-header">
+                <div>
+                    <h1 id="welcomeHeading">Hello! 👋</h1>
+                    <p class="text-muted">Ready to make an impact today?</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 700;" id="profileName">Volunteer</div>
+                        <div class="text-muted" style="font-size: 0.875rem;" id="profileScore">Impact Score: 0</div>
+                    </div>
+                    <div id="profileAvatar"
+                        style="width: 48px; height: 48px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1rem; flex-shrink:0;">
+                        V
+                    </div>
+                </div>
+            </header>
+
+            <!-- Impact Banner -->
+            <div class="impact-banner">
+                <div class="bg-icon">🌍</div>
+                <p class="tier-label">Your Total Achievement</p>
+                <h2>Gold Impact Tier</h2>
+                <div class="badge-list">
+                    <span class="badge-pill on-dark"><i data-lucide="shield-check"></i> Top 5% Contributor</span>
+                    <span class="badge-pill on-dark"><i data-lucide="zap"></i> Fast Responder</span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="student-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Hours</div>
+                    <div class="stat-number text-primary" id="statHours">0 hrs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Drives Joined</div>
+                    <div class="stat-number text-secondary" id="statDrives">0 Events</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Skills Growth</div>
+                    <div class="stat-number">+12%</div>
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="dashboard-grid">
+                <!-- Left: Applications + Certificates -->
+                <div>
+                    <h3 class="card-title">
+                        <i data-lucide="clock" class="text-primary"></i> Active Applications
+                    </h3>
+                    <div class="stat-card" id="appList" style="margin-bottom: 2rem; padding: 0;">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <h3 class="card-title">
+                        <i data-lucide="award" class="text-secondary"></i> Impact Portfolio
+                    </h3>
+                    <div class="cert-card">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div class="cert-icon"><i data-lucide="file-text"></i></div>
+                            <div>
+                                <div style="font-weight: 600;">Green Earth Leadership</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">Issued Feb 2026</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline btn-sm">Download</button>
+                    </div>
+                </div>
+
+                <!-- Right: Top Matches -->
+                <div>
+                    <h3 class="card-title">
+                        <i data-lucide="sparkles" style="color: #f59e0b;"></i> Top Matches
+                    </h3>
+                    <div class="stat-card" id="matchList">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+            </div>
+    </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeSettings()">&times;</span>
+            <h2>Profile Settings</h2>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="editName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Skills (comma separated)</label>
+                    <input type="text" id="editSkills" class="form-control" placeholder="e.g. Teaching, Python, Design">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save
+                    Changes</button>
+            </form>
+        </div>
+    </div>
+    </main>
+
+    </div>
+
+    <script src="db.js"></script>
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+
+        const user = DB.getCurrentUser() || { name: 'Volunteer', impactScore: 0, hours: 0, skills: [] };
+        const applications = DB.getApplicationsByStudent(user.email);
+        const opportunities = DB.getOpportunities();
+
+        // Profile
+        const firstName = (user.name || 'Volunteer').split(' ')[0];
+        document.getElementById('welcomeHeading').innerText = `Hello, ${firstName}! 👋`;
+        document.getElementById('profileName').innerText = user.name || 'Volunteer';
+        document.getElementById('profileScore').innerText = `Impact Score: ${(user.impactScore || 0).toLocaleString()}`;
+        document.getElementById('profileAvatar').innerText =
+            (user.name || 'V').split(' ').map(n => n[0]).join('').toUpperCase();
+
+        // Stats
+        document.getElementById('statHours').innerText = `${user.hours || 0} hrs`;
+        document.getElementById('statDrives').innerText = `${applications.length} Events`;
+
+        // Applications
+        const appList = document.getElementById('appList');
+        appList.innerHTML = applications.length > 0
+            ? applications.map((app, i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem;
+                    ${i < applications.length - 1 ? 'border-bottom: 1px solid var(--border);' : ''}">
+                    <div>
+                        <div style="font-weight:600;">${app.title}</div>
+                        <div class="text-muted" style="font-size:0.875rem;">${app.ngo} • Applied ${app.date}</div>
+                    </div>
+                    <span class="app-status ${app.status}">${app.status.charAt(0).toUpperCase() + app.status.slice(1)}</span>
+                </div>`).join('')
+            : `<div style="padding:2rem; text-align:center;" class="text-muted">
+                No active applications. <a href="opportunities.html" class="text-primary">Find Work →</a>
+               </div>`;
+
+        // Matches
+        const userSkills = (user.skills || []).map(s => s.toLowerCase());
+
+        function calcMatch(oppSkills) {
+            if (!userSkills.length) return 50;
+            return Math.Round((oppSkills.filter(s => userSkills.includes(s.toLowerCase())).length / oppSkills.length) * 100);
+        }
+
+        const top2 = opportunities
+            .map(o => ({ ...o, score: calcMatch(o.skills || []) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2);
+
+        const matchList = document.getElementById('matchList');
+        matchList.innerHTML = top2.length > 0
+            ? top2.map((opp, i) => `
+                <div style="margin-bottom:1.5rem;">
+                    <div style="font-weight:600; margin-bottom:0.25rem;">${opp.title}</div>
+                    <div class="text-muted" style="font-size:0.75rem; margin-bottom:0.5rem;">${opp.score}% Match — ${opp.ngo}</div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" style="width:${opp.score}%;"></div>
+                    </div>
+                </div>
+                ${i === 0 ? `<button class="btn btn-primary" style="width:100%;font-size:0.875rem;"
+                    onclick="activeOpp(${opp.id})">Apply Now</button><hr class="divider">` : ''}`
+            ).join('') + `<div style="text-align:center;">
+                <a href="opportunities.html" class="text-primary" style="font-size:0.875rem;font-weight:600;text-decoration:none;">Explore all matches →</a>
+            </div>`
+            : `<div class="text-muted" style="padding:1rem;text-align:center;">
+                <a href="opportunities.html" class="text-primary">Browse Opportunities →</a>
+               </div>`;
+
+        function activeOpp(id) {
+            window.location.href = 'opportunities.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        // Mobile Sidebar Toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        mobileToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Settings Modal Logic
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsForm = document.getElementById('settingsForm');
+
+        function openSettings() {
+            document.getElementById('editName').value = user.name || '';
+            document.getElementById('editSkills').value = (user.skills || []).join(', ');
+            settingsModal.classList.add('open');
+        }
+
+        function closeSettings() {
+            settingsModal.classList.remove('open');
+        }
+
+        settingsForm.onsubmit = (e) => {
+            e.preventDefault();
+            user.name = document.getElementById('editName').value;
+            user.skills = document.getElementById('editSkills').value
+                .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+
+            DB.saveUser(user);
+            showToast('Settings saved!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        };
+
+        window.onclick = (event) => {
+            if (event.target == settingsModal) closeSettings();
+        };
+    </script>
+
+
+</body>
+
+</html>

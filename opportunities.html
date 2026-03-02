@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunities | VolunteerVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="logo">
+                <img src="VVlogo1.PNG" alt="VolunteerVerse">
+            </a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="opportunities.html">Opportunities</a></li>
+                <li><a href="index.html#features">Features</a></li>
+                <li><a href="about.html">About Us</a></li>
+                <li><a href="signup.html" class="btn btn-primary">Join Now</a></li>
+                <li><a href="login.html" class="btn btn-outline">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="opp-header">
+        <div class="container">
+            <h1>Discover Opportunities</h1>
+            <p>Find meaningful ways to contribute based on your skills and availability.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="opp-controls">
+            <input type="text" placeholder="Search by skills, NGO, or keyword..." class="search-input" id="searchOpp">
+            <select class="filter-select" id="skillFilter">
+                <option value="">All Skills</option>
+                <option value="Teaching">Teaching</option>
+                <option value="Environment">Environment</option>
+                <option value="Tech">Tech</option>
+                <option value="Healthcare">Healthcare</option>
+            </select>
+            <select class="filter-select" id="dateFilter">
+                <option value="">Any Date</option>
+                <option value="This Weekend">This Weekend</option>
+                <option value="Next Week">Next Week</option>
+            </select>
+            <button class="btn btn-primary" id="postBtn" style="margin-left: auto;">Post Opportunity</button>
+        </div>
+
+        <div class="opp-grid" id="oppContainer">
+            <!-- Cards injected by JS -->
+        </div>
+    </main>
+
+    <!-- Apply Modal -->
+    <div class="modal" id="applyModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal('applyModal')"><i data-lucide="x"></i></div>
+            <h2>Apply for Opportunity</h2>
+            <p id="applyTitle" class="text-primary" style="font-weight: 600; margin-bottom: 1.5rem;"></p>
+            <form id="applyForm">
+                <div class="form-group">
+                    <label>Why do you want to join?</label>
+                    <textarea class="form-control search-input" style="height: 100px;" required
+                        placeholder="Tell us about your motivation..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Application</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Post Opportunity Modal -->
+    <div class="modal" id="postModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal('postModal')"><i data-lucide="x"></i></div>
+            <h2>Post New Opportunity</h2>
+            <form id="postForm">
+                <div class="form-group">
+                    <label>Event Title</label>
+                    <input type="text" class="form-control" required id="postTitle">
+                </div>
+                <div class="form-group">
+                    <label>Skills Required (comma separated)</label>
+                    <input type="text" class="form-control" required id="postSkills" placeholder="e.g. Teaching, Tech">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" class="form-control" required id="postDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" class="form-control" required id="postLocation">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">Post for Verification</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="index.html" class="logo">
+                        <img src="VVlogo1.PNG" alt="VolunteerVerse">
+                    </a>
+                    <h3>VolunteerVerse</h3>
+                    <p>Empowering the next generation of change-makers.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="opportunities.html">Opportunities</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="about.html">About Us</a></li>
+                        <li><a href="signup.html">Register</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 VolunteerVerse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="db.js"></script>
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+
+        // Get opportunities from DB
+        let opportunities = DB.getOpportunities();
+
+        const user = DB.getCurrentUser() || { skills: [] };
+        const userSkills = (user.skills || []).map(s => s.toLowerCase());
+
+        function calculateMatch(oppSkills) {
+            if (!userSkills.length) return 50;
+            const matches = oppSkills.filter(s => userSkills.includes(s.toLowerCase()));
+            return Math.max(Math.round((matches.length / oppSkills.length) * 100), 45);
+        }
+
+        function renderOpportunities(data) {
+            const container = document.getElementById('oppContainer');
+            container.innerHTML = data.length
+                ? data.map(opp => {
+                    const score = calculateMatch(opp.skills);
+                    const highMatch = score > 70;
+                    return `
+                        <div class="opp-card">
+                            <div class="opp-ngo">
+                                <span>${opp.ngo}</span>
+                                ${opp.verified ? '<span class="ngo-badge"><i data-lucide="check-circle" style="width:12px"></i> Verified</span>' : ''}
+                            </div>
+                            <h3 class="opp-title">${opp.title}</h3>
+                            <div class="opp-details">
+                                <div class="opp-detail"><i data-lucide="map-pin"></i> ${opp.location}</div>
+                                <div class="opp-detail"><i data-lucide="calendar"></i> ${opp.date}</div>
+                            </div>
+                            <div class="opp-tags">
+                                ${opp.skills.map(s => `<span class="tag">${s}</span>`).join('')}
+                            </div>
+                            <div class="opp-footer">
+                                <div class="match-indicator" style="background:${highMatch ? 'var(--primary-light)' : 'rgba(0,0,0,0.05)'}; color:${highMatch ? 'var(--primary)' : 'var(--text-muted)'}">
+                                    ${score}% Match
+                                </div>
+                                <button class="btn btn-primary btn-sm" onclick="openApply(${opp.id}, '${opp.title}')">Apply</button>
+                            </div>
+                        </div>`;
+                }).join('')
+                : '<p class="text-muted" style="text-align:center; padding: 3rem;">No opportunities found.</p>';
+            lucide.createIcons();
+        }
+
+        let selectedOppId = null;
+
+        function openApply(id, title) {
+            if (localStorage.getItem('userRole') !== 'student') {
+                showToast('Only volunteers can apply for opportunities!', 'error');
+                return;
+            }
+            selectedOppId = id;
+            document.getElementById('applyTitle').innerText = title;
+            document.getElementById('applyModal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        document.getElementById('applyForm').onsubmit = (e) => {
+            e.preventDefault();
+            const motivation = e.target.querySelector('textarea').value;
+            const opp = opportunities.find(o => o.id === selectedOppId);
+            const student = DB.getCurrentUser();
+
+            if (opp && student) {
+                DB.applyToOpportunity(student, opp, motivation);
+                showToast('Application submitted successfully!', 'success');
+                closeModal('applyModal');
+                e.target.reset();
+            } else {
+                showToast('Failed to submit application. Please login again.', 'error');
+            }
+        };
+
+        document.getElementById('postBtn').onclick = () => {
+            if (localStorage.getItem('userRole') !== 'ngo') {
+                showToast('Only NGOs can post opportunities!', 'error');
+                return;
+            }
+            document.getElementById('postModal').style.display = 'flex';
+        };
+
+        document.getElementById('postForm').onsubmit = (e) => {
+            e.preventDefault();
+            const newOpp = {
+                title: document.getElementById('postTitle').value,
+                ngo: (DB.getCurrentUser() || {}).organization || (DB.getCurrentUser() || {}).name || 'My NGO',
+                verified: false,
+                skills: document.getElementById('postSkills').value.split(',').map(s => s.trim().toLowerCase()),
+                date: document.getElementById('postDate').value,
+                location: document.getElementById('postLocation').value,
+            };
+            DB.saveOpportunity(newOpp);
+            opportunities = DB.getOpportunities();
+            renderOpportunities(opportunities);
+            closeModal('postModal');
+            showToast('Opportunity posted for verification!', 'success');
+            e.target.reset();
+        };
+
+        document.getElementById('searchOpp').oninput = (e) => {
+            const val = e.target.value.toLowerCase();
+            renderOpportunities(opportunities.filter(o =>
+                o.title.toLowerCase().includes(val) ||
+                o.ngo.toLowerCase().includes(val) ||
+                o.skills.some(s => s.toLowerCase().includes(val))
+            ));
+        };
+
+        renderOpportunities(opportunities);
+    </script>
+</body>
+
+</html>

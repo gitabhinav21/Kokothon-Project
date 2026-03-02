@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join VolunteerVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-bg-blob bottom-left"></div>
+
+        <div class="auth-card wide">
+            <div class="auth-header">
+                <a href="index.html" class="logo">
+                    <img src="VVlogo1.PNG" alt="VolunteerVerse">
+                </a>
+                <h2>Create Account</h2>
+                <p>Join the community and start your impact journey.</p>
+            </div>
+
+            <div class="role-selector">
+                <button type="button" class="role-btn active" id="btnStudent" onclick="setRole('student')">As
+                    Volunteer</button>
+                <button type="button" class="role-btn" id="btnNgo" onclick="setRole('ngo')">As NGO</button>
+            </div>
+
+            <form id="signupForm" novalidate>
+                <div class="form-grid">
+                    <div class="form-group" id="groupName">
+                        <label>Full Name</label>
+                        <input type="text" class="form-control" id="inputName" placeholder="Rahul Sharma" required>
+                        <div class="validation-message">Name is required.</div>
+                    </div>
+                    <div class="form-group" id="groupEmail">
+                        <label>Email Address (@gmail.com only)</label>
+                        <input type="email" class="form-control" id="inputEmail" placeholder="rahul@gmail.com" required>
+                        <div class="validation-message">Please enter a valid @gmail.com address.</div>
+                    </div>
+
+                    <div class="form-group full" id="studentFields">
+                        <label>Top Skills (e.g. Teaching, Python, Design)</label>
+                        <input type="text" class="form-control" id="inputSkills" placeholder="Separated by commas">
+                    </div>
+
+                    <div class="form-group full" id="ngoFields" style="display: none;">
+                        <label>Organization Name</label>
+                        <input type="text" class="form-control" id="inputOrg" placeholder="NGO Name">
+                    </div>
+
+                    <div class="form-group" id="groupPass">
+                        <label>Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="inputPass" class="form-control" placeholder="••••••••" required>
+                            <i data-lucide="eye" class="password-toggle" id="togglePass"></i>
+                        </div>
+                        <div class="validation-message">Min 8 chars, 1 uppercase, 1 number.</div>
+                    </div>
+                    <div class="form-group" id="groupConfirm">
+                        <label>Confirm Password</label>
+                        <input type="password" id="inputConfirm" class="form-control" placeholder="••••••••" required>
+                        <div class="validation-message">Passwords do not match.</div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 0.5rem;">
+                    <label class="form-check"
+                        style="font-size: 0.875rem; align-items: flex-start; color: var(--text-muted);">
+                        <input type="checkbox" required style="margin-top: 3px;">
+                        <span>I agree to the <a href="#" class="form-link">Terms of Service</a>.</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary"
+                    style="width: 100%; padding: 1rem; margin-top: 0.5rem;">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="form-footer">
+                Already have an account? <a href="login.html">Sign In</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+        let currentRole = 'student';
+
+        // Role Selection
+        function setRole(role) {
+            currentRole = role;
+            document.getElementById('btnStudent').classList.toggle('active', role === 'student');
+            document.getElementById('btnNgo').classList.toggle('active', role === 'ngo');
+            document.getElementById('studentFields').style.display = role === 'student' ? 'block' : 'none';
+            document.getElementById('ngoFields').style.display = role === 'ngo' ? 'block' : 'none';
+        }
+
+        // Show/Hide Password
+        const togglePass = document.getElementById('togglePass');
+        const inputPass = document.getElementById('inputPass');
+        togglePass.onclick = () => {
+            const type = inputPass.type === 'password' ? 'text' : 'password';
+            inputPass.type = type;
+            togglePass.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        };
+
+        // Real-time Validation
+        const validate = {
+            email: (val) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(val),
+            password: (val) => val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val),
+            confirm: (val) => val === inputPass.value
+        };
+
+        function updateUI(el, isValid) {
+            const group = el.closest('.form-group');
+            group.classList.toggle('error', !isValid && el.value !== '');
+            group.classList.toggle('success', isValid);
+        }
+
+        document.getElementById('inputEmail').oninput = (e) => updateUI(e.target, validate.email(e.target.value));
+        document.getElementById('inputPass').oninput = (e) => updateUI(e.target, validate.password(e.target.value));
+        document.getElementById('inputConfirm').oninput = (e) => updateUI(e.target, validate.confirm(e.target.value));
+
+        // Form Submission
+        document.getElementById('signupForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+
+            const name = document.getElementById('inputName').value;
+            const email = document.getElementById('inputEmail').value;
+            const pass = document.getElementById('inputPass').value;
+            const confirm = document.getElementById('inputConfirm').value;
+
+            // Final Validation
+            if (!validate.email(email)) return showToast('Please use a valid @gmail.com address', 'error');
+            if (!validate.password(pass)) return showToast('Password must meet requirements', 'error');
+            if (pass !== confirm) return showToast('Passwords do not match', 'error');
+
+            // Check duplicate
+            const allUsers = DB.getUsers();
+            if (allUsers.find(u => u.email === email)) {
+                return showToast('Registration failed: Email already exists', 'error');
+            }
+
+            // Start Loading
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+
+            try {
+                const hashedPassword = await hashPassword(pass);
+                const newUser = {
+                    name,
+                    email,
+                    password: hashedPassword,
+                    role: currentRole,
+                    impactScore: 0,
+                    hours: 0,
+                    skills: currentRole === 'student' ? document.getElementById('inputSkills').value.split(',').map(s => s.trim()).filter(Boolean) : []
+                };
+                if (currentRole === 'ngo') newUser.organization = document.getElementById('inputOrg').value;
+
+                DB.saveUser(newUser);
+
+                showToast('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => window.location.href = 'login.html', 1500);
+            } catch (err) {
+                console.error(err);
+                showToast('An error occurred. Please try again.', 'error');
+                btn.classList.remove('btn-loading');
+                btn.disabled = false;
+            }
+        };
+    </script>
+
+</body>
+
+</html>

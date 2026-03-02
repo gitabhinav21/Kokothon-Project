@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | VolunteerVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-bg-blob top-right"></div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <a href="index.html" class="logo">
+                    <img src="VVlogo1.PNG" alt="VolunteerVerse">
+                </a>
+                <h2>Welcome Back</h2>
+                <p>Please enter your details to login.</p>
+            </div>
+
+            <div class="role-selector">
+                <button class="role-btn active" onclick="setRole('student', this)">Student</button>
+                <button class="role-btn" onclick="setRole('ngo', this)">NGO</button>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="name@gmail.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPass" class="form-control" placeholder="••••••••" required>
+                        <i data-lucide="eye" class="password-toggle" id="togglePass"></i>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="form-check">
+                        <input type="checkbox" id="rememberMe"> Remember me
+                    </label>
+                    <a href="#" class="form-link">Forgot Password?</a>
+                </div>
+                <button type="submit" id="loginBtn" class="btn btn-primary" style="width: 100%; padding: 1rem;">Sign
+                    In</button>
+            </form>
+
+            <div class="auth-divider">Or continue with</div>
+
+            <div class="social-login">
+                <button class="social-btn">
+                    <img src="https://www.google.com/favicon.ico" width="16" height="16" alt="Google"> Google
+                </button>
+                <button class="social-btn">
+                    <i data-lucide="github" style="width:16px"></i> GitHub
+                </button>
+            </div>
+
+            <p class="form-footer">
+                Don't have an account? <a href="signup.html">Join Now</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+        let currentRole = 'student';
+
+        function setRole(role, btn) {
+            currentRole = role;
+            document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Show/Hide Password
+        const togglePass = document.getElementById('togglePass');
+        const loginPass = document.getElementById('loginPass');
+        togglePass.onclick = () => {
+            const type = loginPass.type === 'password' ? 'text' : 'password';
+            loginPass.type = type;
+            togglePass.setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+            lucide.createIcons();
+        };
+
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+
+            // Start Loading
+            btn.classList.add('btn-loading');
+            btn.disabled = true;
+
+            try {
+                const allUsers = DB.getUsers();
+                const user = allUsers.find(u => u.email === email);
+
+                if (!user) {
+                    showToast('No account found. Please sign up first.', 'error');
+                } else {
+                    const hashedPass = await hashPassword(pass);
+                    if (user.password !== hashedPass) {
+                        showToast('Incorrect password.', 'error');
+                    } else if (user.role !== currentRole) {
+                        showToast(`This account is registered as a ${user.role}. Please select the correct role.`, 'error');
+                    } else {
+                        // Success
+                        localStorage.setItem('user', JSON.stringify(user));
+                        localStorage.setItem('userRole', user.role);
+                        localStorage.setItem('isLoggedIn', 'true');
+                        showToast('Login successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = user.role === 'student' ? 'student-dashboard.html' : 'ngo-dashboard.html';
+                        }, 1000);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('An error occurred during login', 'error');
+            }
+
+            // Reset Loading on Fail
+            btn.classList.remove('btn-loading');
+            btn.disabled = false;
+        };
+    </script>
+</body>
+
+</html>

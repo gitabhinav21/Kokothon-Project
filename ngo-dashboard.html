@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <title>NGO Dashboard | VolunteerVerse</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <div class="mobile-nav-header">
+        <a href="index.html" class="logo">
+            <img src="VVlogo1.PNG" alt="VolunteerVerse" style="height: 32px; width: auto;">
+        </a>
+        <button class="mobile-nav-toggle" id="mobileToggle">
+            <i data-lucide="menu"></i>
+        </button>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="dash-layout">
+
+        <aside class="sidebar">
+            <a href="index.html" class="logo sidebar-logo">
+                <img src="VVlogo1.PNG" alt="VolunteerVerse" style="height: 48px; width: auto;">
+            </a>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i data-lucide="bar-chart-3"></i> Overview</a>
+                <a href="opportunities.html" class="nav-item"><i data-lucide="plus-circle"></i> Post New</a>
+                <a href="#" class="nav-item"><i data-lucide="users"></i> Volunteers</a>
+                <a href="#" onclick="openSettings()" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+                <a href="#" onclick="logout()" class="nav-item logout"><i data-lucide="log-out"></i> Logout</a>
+
+            </nav>
+        </aside>
+
+        <main class="dash-content">
+            <!-- Header -->
+            <header class="dash-header">
+                <div>
+                    <h1 id="orgTitle">NGO Dashboard 🌿</h1>
+                    <p class="text-muted">Manage your social impact and volunteers.</p>
+                </div>
+                <button class="btn btn-secondary" onclick="location.href='opportunities.html'">
+                    + Create New Drive
+                </button>
+            </header>
+
+            <!-- Analytics Cards -->
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <span class="label">Total Volunteers</span>
+                    <div class="value text-secondary" id="statVolunteers">—</div>
+                    <span class="trend text-secondary" id="statGrowth">↑ View details</span>
+                </div>
+                <div class="analytics-card">
+                    <span class="label">Active Drives</span>
+                    <div class="value" id="statDrives">—</div>
+                </div>
+                <div class="analytics-card">
+                    <span class="label">Hours Managed</span>
+                    <div class="value text-primary" id="statHours">—</div>
+                </div>
+                <div class="analytics-card">
+                    <span class="label">Pending Review</span>
+                    <div class="value pending-count" id="statPending">—</div>
+                </div>
+            </div>
+
+            <!-- Active Opportunities -->
+            <div class="section-title">
+                <span>Active Opportunities</span>
+                <a href="opportunities.html">View All</a>
+            </div>
+
+            <div id="oppList">
+                <!-- Injected by JS or default items below -->
+                <div class="opp-item">
+                    <div>
+                        <div style="font-weight:600;">Environmental Awareness Drive</div>
+                        <div class="text-muted" style="font-size:0.875rem;">Starts March 10 • Juhu Beach, Mumbai</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="vol-stack">
+                            <div class="vol-avatar" style="background:#7C3AED;"></div>
+                            <div class="vol-avatar" style="background:#F59E0B;"></div>
+                            <div class="vol-avatar" style="background:#EC4899;"></div>
+                        </div>
+                        <span class="text-muted" style="font-size:0.875rem;">+42 applied</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm">Manage</button>
+                </div>
+                <div class="opp-item">
+                    <div>
+                        <div style="font-weight:600;">Lake Cleanup Marathon</div>
+                        <div class="text-muted" style="font-size:0.875rem;">Starts April 05 • Powai Lake</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="vol-stack">
+                            <div class="vol-avatar" style="background:#5B21B6;"></div>
+                            <div class="vol-avatar" style="background:#D97706;"></div>
+                        </div>
+                        <span class="text-muted" style="font-size:0.875rem;">+15 applied</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm">Manage</button>
+                </div>
+            </div>
+
+            <!-- Verification Queue -->
+            <div style="margin-top: 2.5rem;">
+                <div class="section-title">
+                    <span>Verification Queue</span>
+                </div>
+                <div class="stat-card" style="padding:0;" id="verificationQueue">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+    </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeSettings()">&times;</span>
+            <h2>Organization Settings</h2>
+            <form id="settingsForm">
+                <div class="form-group">
+                    <label>Organization Name</label>
+                    <input type="text" id="editOrg" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" id="editEmail" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save
+                    Changes</button>
+            </form>
+        </div>
+    </div>
+    </main>
+
+    </div>
+
+    <script src="db.js"></script>
+    <script src="main.js"></script>
+    <script>
+        lucide.createIcons();
+
+        const user = DB.getCurrentUser() || { organization: 'My Organization' };
+        const allOpps = DB.getOpportunities();
+        const allApps = DB.getApplications();
+        const orgName = (user.organization || user.name || '').toLowerCase().trim();
+        const myApps = DB.getApplicationsByNGO(orgName);
+        const myOpps = allOpps.filter(o => (o.ngo || '').toLowerCase().trim() === orgName);
+
+        // Header
+        document.getElementById('orgTitle').innerText = `${user.organization || 'NGO'} Dashboard 🌿`;
+
+        // Stats
+        document.getElementById('statVolunteers').innerText = myApps.filter(a => a.status === 'approved').length;
+        document.getElementById('statDrives').innerText = myOpps.length;
+        document.getElementById('statHours').innerText = myApps.filter(a => a.status === 'approved').length * 5; // Demo calculation
+        document.getElementById('statPending').innerText = myApps.filter(a => a.status === 'pending').length;
+
+        // Active Opportunities
+        const oppListing = document.getElementById('oppList');
+        oppListing.innerHTML = myOpps.length > 0
+            ? myOpps.map(opp => {
+                const appCount = allApps.filter(a => a.opportunityId === opp.id).length;
+                return `
+                <div class="opp-item">
+                    <div>
+                        <div style="font-weight:600;">${opp.title}</div>
+                        <div class="text-muted" style="font-size:0.875rem;">${opp.date} • ${opp.location}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span class="text-muted" style="font-size:0.875rem;">${appCount} applied</span>
+                    </div>
+                    <button class="btn btn-outline btn-sm">Manage</button>
+                </div>`;
+            }).join('')
+            : '<div class="text-muted" style="padding:1rem;">No active opportunities.</div>';
+
+        // Verification Queue (Pending Applications)
+        const queue = document.getElementById('verificationQueue');
+        const pendingApps = myApps.filter(a => a.status === 'pending');
+        queue.innerHTML = pendingApps.length > 0
+            ? pendingApps.map((app, i) => `
+                <div class="queue-item">
+                    <div class="queue-item-info">
+                        <div class="queue-avatar"><i data-lucide="user"></i></div>
+                        <div>
+                            <div style="font-weight:600;">${app.studentName}</div>
+                            <div class="text-muted" style="font-size:0.75rem;">
+                                Applied for "${app.title}" on ${app.date}
+                            </div>
+                            <div class="text-muted" style="font-size:0.75rem; margin-top:0.25rem; font-style:italic;">
+                                "${app.motivation || 'No motivation provided.'}"
+                            </div>
+                        </div>
+                    </div>
+                    <div class="queue-actions">
+                        <button class="btn btn-secondary btn-sm"
+                            onclick="updateApp(${app.id}, 'approved')">Approve</button>
+                        <button class="btn btn-outline btn-sm"
+                            onclick="updateApp(${app.id}, 'rejected')">Decline</button>
+                    </div>
+                </div>`).join('')
+            : `
+                <div class="queue-item" style="justify-content:center; padding: 2rem;">
+                    <div class="text-muted">No pending applications to review.</div>
+                </div>`;
+        lucide.createIcons();
+
+        function updateApp(appId, status) {
+            if (DB.updateApplicationStatus(appId, status)) {
+                showToast(`Application ${status}!`, status === 'approved' ? 'success' : 'info');
+                setTimeout(() => location.reload(), 1000);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        // Mobile Sidebar Toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+        }
+
+        mobileToggle.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Settings Modal Logic
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsForm = document.getElementById('settingsForm');
+
+        function openSettings() {
+            document.getElementById('editOrg').value = user.organization || user.name || '';
+            document.getElementById('editEmail').value = user.email || '';
+            settingsModal.classList.add('open');
+        }
+
+        function closeSettings() {
+            settingsModal.classList.remove('open');
+        }
+
+        settingsForm.onsubmit = (e) => {
+            e.preventDefault();
+            user.organization = document.getElementById('editOrg').value;
+            user.name = user.organization;
+            user.email = document.getElementById('editEmail').value;
+
+            DB.saveUser(user);
+            showToast('Settings saved!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        };
+
+        window.onclick = (event) => {
+            if (event.target == settingsModal) closeSettings();
+        };
+    </script>
+
+
+</body>
+
+</html>
